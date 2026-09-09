@@ -18,7 +18,7 @@
 </header>
 
 <article th:fragment="productCard(product)" th:if="${product != null}" class="product-card">
-    <a class="product-image" th:href="@{/products/{id}(id=${product.id})}">
+    <a class="product-image" th:href="@{/products/{id}(id=${product.id})}" th:attr="aria-label=|View ${product.name}|">
         <img th:if="${product.imageUrl}" th:src="${product.imageUrl}" th:alt="${product.name}">
         <span th:unless="${product.imageUrl}" aria-hidden="true">🍽️</span>
     </a>
@@ -30,5 +30,11 @@
         <div class="price-row"><strong th:text="|₹${product.currentPrice()}|">₹0</strong><del th:if="${product.hasDiscount()}" th:text="|₹${product.price()}|">₹0</del></div>
     </div>
 </article>
+
+<footer th:fragment="footer" class="site-footer">
+    <div><a class="brand" th:href="@{/}">BITE <span>CART</span></a><p>Your Cravings. One Cart Away.</p></div>
+    <nav aria-label="Footer navigation"><a th:href="@{/products}">Browse food</a><a th:href="@{/wishlist}" sec:authorize="isAuthenticated()">Wishlist</a><a th:href="@{/orders}" sec:authorize="isAuthenticated()">Orders</a><a th:href="@{/login}" sec:authorize="isAnonymous()">Sign in</a></nav>
+    <small>© BiteCart</small>
+</footer>
 </body>
 </html>

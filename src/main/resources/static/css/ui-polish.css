@@ -1,0 +1,37 @@
+/* Shared Phase 10 visual and accessibility refinements. */
+html { scroll-behavior: smooth; }
+body { text-rendering: optimizeLegibility; }
+:focus-visible { outline: 3px solid #c9461d !important; outline-offset: 3px; }
+a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+.site-header { backdrop-filter: blur(12px); background:rgba(255,253,248,.9); border-bottom:1px solid rgba(233,229,220,.85); position:sticky; top:0; z-index:20; }
+.site-header nav a, .logout-form button { border-radius:999px; padding:.48rem .65rem; transition:background-color .2s ease,color .2s ease,transform .2s ease; }
+.site-header nav a:hover, .logout-form button:hover { background:#fff0e8; color:#b63d18; }
+.hero, .category-card, .product-card, .cart-summary, .checkout-panel, .tracking-card, .order-card, .wishlist-item, .review-card { box-shadow:0 12px 32px rgba(69,42,24,.055); }
+.product-card, .category-card, .wishlist-item, .order-card { transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease; }
+.product-card:hover, .category-card:hover, .wishlist-item:hover, .order-card:hover { border-color:#efb39c; box-shadow:0 16px 36px rgba(69,42,24,.12); transform:translateY(-4px); }
+.product-image img, .detail-image img, .cart-item-image img, .category-card img { transition:transform .35s ease; }
+.product-card:hover .product-image img, .wishlist-item:hover .product-image img, .category-card:hover img { transform:scale(1.045); }
+.button, .secondary-button, .button-secondary, .button-danger { transition:box-shadow .2s ease,transform .2s ease,background-color .2s ease,border-color .2s ease; }
+.button:hover, .secondary-button:hover, .button-secondary:hover, .button-danger:hover { box-shadow:0 8px 18px rgba(69,42,24,.14); transform:translateY(-1px); }
+.filters, .checkout-panel, .cart-summary, .tracking-card { border:1px solid rgba(233,229,220,.9); }
+.filters input:focus, .filters select:focus, .product-actions input:focus, .quantity-form input:focus, .checkout-panel input:focus, .checkout-panel select:focus, .checkout-panel textarea:focus, .coupon-form input:focus, .review-form-wrap select:focus, .review-form-wrap textarea:focus { border-color:#e95b2b; box-shadow:0 0 0 3px rgba(233,91,43,.14); outline:none; }
+.empty-state { border:1px dashed #dfb59f; line-height:1.6; }
+.alert { border-left:4px solid #e95b2b; line-height:1.55; }
+.alert.success { border-left-color:#276837; }
+.site-footer { align-items:center; border-top:1px solid #e9e5dc; color:#70736e; display:flex; flex-wrap:wrap; gap:1rem 2rem; justify-content:space-between; margin-top:2rem; padding:2rem 0 2.5rem; }
+.site-footer .brand { color:#20201e; display:inline-block; }
+.site-footer p { font-size:.86rem; margin:.4rem 0 0; }
+.site-footer nav { display:flex; flex-wrap:wrap; gap:.8rem 1rem; }
+.site-footer nav a { color:#50534e; font-size:.86rem; text-decoration:none; }
+.site-footer nav a:hover { color:#e95b2b; }
+.site-footer small { font-size:.78rem; }
+.auth-shell { background:radial-gradient(circle at 16% 12%,#ffcfb5 0,transparent 19rem),radial-gradient(circle at 85% 85%,#d8edcf 0,transparent 20rem); }
+.auth-card { box-shadow:0 22px 48px rgba(72,43,29,.14) !important; }
+.link-button { text-align:center; text-decoration:none; }
+.admin-header { background:rgba(255,253,248,.94); position:sticky; top:0; z-index:20; }
+.admin-header nav a:hover, .admin-header button:hover { color:#e95b2b; }
+.admin-card:hover, .metric:hover { box-shadow:0 10px 24px rgba(69,42,24,.07); }
+.admin-table tr:hover td { background:#fffaf5; }
+.admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { border-color:#e95b2b; box-shadow:0 0 0 3px rgba(233,91,43,.14); outline:none; }
+@media (max-width:760px) { .site-header nav { gap:.25rem !important; width:100%; } .site-header nav a, .logout-form button { padding:.45rem .52rem; } .site-footer { align-items:flex-start; flex-direction:column; } .hero { border-radius:22px; } .product-card:hover, .category-card:hover, .wishlist-item:hover, .order-card:hover { transform:none; } }
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; } }

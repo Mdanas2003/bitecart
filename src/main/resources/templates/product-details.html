@@ -48,5 +48,5 @@
     </section>
 
     <section class="content-section" th:if="${not #lists.isEmpty(relatedProducts)}"><div class="section-heading"><div><p class="eyebrow">MORE TO TRY</p><h2>From the same kitchen.</h2></div></div><div class="product-grid"><article th:each="related : ${relatedProducts}" th:replace="~{fragments/catalog :: productCard(product=${related})}"></article></div></section>
-</main></div>
+</main><footer th:replace="~{fragments/catalog :: footer}"></footer></div>
 </body></html>

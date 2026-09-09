@@ -16,4 +16,4 @@
     <div class="product-grid"><article th:each="product : ${products.content}" th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></div>
     <p class="empty-state" th:if="${products.empty}">No bites match those filters. Try a broader search.</p>
     <nav class="pagination" th:if="${products.totalPages > 1}" aria-label="Catalog pages"><a th:if="${products.hasPrevious()}" th:href="@{/products(page=${products.number - 1},search=${filter.search},category=${filter.categoryId},minPrice=${filter.minPrice},maxPrice=${filter.maxPrice},minRating=${filter.minRating},sort=${filter.sort.parameterValue})}">← Previous</a><span th:text="|Page ${products.number + 1} of ${products.totalPages}|">Page 1 of 1</span><a th:if="${products.hasNext()}" th:href="@{/products(page=${products.number + 1},search=${filter.search},category=${filter.categoryId},minPrice=${filter.minPrice},maxPrice=${filter.maxPrice},minRating=${filter.minRating},sort=${filter.sort.parameterValue})}">Next →</a></nav>
-</main></div></body></html>
+</main><footer th:replace="~{fragments/catalog :: footer}"></footer></div></body></html>

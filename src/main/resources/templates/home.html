@@ -29,6 +29,7 @@
             <p class="empty-state" th:if="${#lists.isEmpty(featuredProducts)}">We are preparing some delicious highlights.</p>
         </section>
     </main>
+    <footer th:replace="~{fragments/catalog :: footer}"></footer>
 </div>
 </body>
 </html>
