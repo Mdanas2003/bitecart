@@ -106,6 +106,8 @@ class CheckoutOrderControllerIntegrationTests {
         assertThat(order.getCouponCode()).isEqualTo("SAVE10");
         assertThat(order.getDiscountAmount()).isEqualByComparingTo("12.00");
         assertThat(couponRepository.findByCodeIgnoreCase("SAVE10").orElseThrow().getUsedCount()).isEqualTo(1);
+        assertThat(cartRepository.findByUserEmailIgnoreCase("one@example.com").orElseThrow().getItems()).isEmpty();
+        assertThat(session.getAttribute("checkoutCouponCode")).isNull();
 
         mockMvc.perform(get("/orders"))
                 .andExpect(status().isOk())
@@ -114,6 +116,9 @@ class CheckoutOrderControllerIntegrationTests {
         mockMvc.perform(get("/orders/{id}", order.getId()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("order-details"));
+        mockMvc.perform(get("/orders/{id}/success", order.getId()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("order-success"));
     }
 
     @Test
@@ -127,6 +132,27 @@ class CheckoutOrderControllerIntegrationTests {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/checkout"))
                 .andExpect(flash().attributeExists("checkoutError"));
+    }
+
+    @Test
+    @WithMockUser(username = "one@example.com", roles = "USER")
+    void couponCanBeRemovedAndCheckoutPostsRequireCsrf() throws Exception {
+        mockMvc.perform(post("/cart/items").with(csrf()).param("productId", product.getId().toString()).param("quantity", "1"))
+                .andExpect(status().is3xxRedirection());
+        couponRepository.save(coupon("REMOVE10"));
+
+        MvcResult applyResult = mockMvc.perform(post("/checkout/coupon").with(csrf()).param("code", "REMOVE10"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) applyResult.getRequest().getSession(false);
+        mockMvc.perform(post("/checkout/coupon/remove").session(session).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("checkoutSuccess"));
+        assertThat(session.getAttribute("checkoutCouponCode")).isNull();
+        assertThat(couponRepository.findByCodeIgnoreCase("REMOVE10").orElseThrow().getUsedCount()).isZero();
+
+        mockMvc.perform(post("/checkout/coupon").param("code", "REMOVE10"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

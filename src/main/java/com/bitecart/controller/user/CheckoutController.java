@@ -32,6 +32,7 @@ import java.util.List;
 public class CheckoutController {
 
     private static final String CHECKOUT_COUPON_SESSION_KEY = "checkoutCouponCode";
+    private static final BigDecimal DELIVERY_FEE = BigDecimal.ZERO;
 
     private final CartService cartService;
     private final CouponService couponService;
@@ -66,10 +67,23 @@ public class CheckoutController {
             }
         }
 
+        List<AddressDTO> addresses = addressesFor(authentication);
+        if (checkoutForm.getAddressId() == null) {
+            addresses.stream().filter(AddressDTO::defaultAddress).findFirst()
+                    .or(() -> addresses.stream().findFirst())
+                    .ifPresent(address -> checkoutForm.setAddressId(address.id()));
+        }
+        if (checkoutForm.getPaymentMethod() == null) {
+            checkoutForm.setPaymentMethod(com.bitecart.entity.PaymentMethod.CASH_ON_DELIVERY);
+        }
+
+        BigDecimal finalTotal = cart.subtotal().subtract(couponDiscount).add(DELIVERY_FEE);
         model.addAttribute("cart", cart);
-        model.addAttribute("addresses", addressesFor(authentication));
+        model.addAttribute("addresses", addresses);
         model.addAttribute("couponCode", couponCode);
         model.addAttribute("couponDiscount", couponDiscount);
+        model.addAttribute("deliveryFee", DELIVERY_FEE);
+        model.addAttribute("finalTotal", finalTotal);
         return "checkout";
     }
 
