@@ -7,6 +7,7 @@ import com.bitecart.dto.AdminProductForm;
 import com.bitecart.dto.AdminUserForm;
 import com.bitecart.repository.*;
 import com.bitecart.service.AdminService;
+import com.bitecart.service.AdminReportService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AdminIntegrationTests {
-    @Autowired private MockMvc mockMvc; @Autowired private AdminService adminService;
+    @Autowired private MockMvc mockMvc; @Autowired private AdminService adminService; @Autowired private AdminReportService adminReportService;
     @Autowired private ReviewRepository reviewRepository; @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private OrderRepository orderRepository; @Autowired private CouponRepository couponRepository;
     @Autowired private WishlistRepository wishlistRepository; @Autowired private CartRepository cartRepository;
@@ -45,6 +47,9 @@ class AdminIntegrationTests {
         mockMvc.perform(get("/admin")).andExpect(status().is3xxRedirection());
         mockMvc.perform(get("/admin").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("customer@example.com").roles("USER"))).andExpect(status().isForbidden());
         mockMvc.perform(get("/admin").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("admin@example.com").roles("ADMIN"))).andExpect(status().isOk());
+        mockMvc.perform(get("/admin/reports")).andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/admin/reports").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("customer@example.com").roles("USER"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/admin/reports").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("admin@example.com").roles("ADMIN"))).andExpect(status().isOk());
     }
 
     @Test @WithMockUser(username = "admin@example.com", roles = "ADMIN")
@@ -68,6 +73,20 @@ class AdminIntegrationTests {
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getOrderStatus()).isEqualTo(OrderStatus.OUT_FOR_DELIVERY);
         Review review = new Review(); review.setUser(customer); review.setProduct(product); review.setOrder(order); review.setRating(4); review.setComment("Tasty meal"); review = reviewRepository.save(review); product.setRating(new BigDecimal("4.0")); productRepository.save(product);
         adminService.deleteReview(review.getId()); assertThat(reviewRepository.count()).isZero(); assertThat(productRepository.findById(product.getId()).orElseThrow().getRating()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test void reportsAggregateNonCancelledOrdersAndRespectDateRange() {
+        deliveredOrder();
+        Order confirmed = deliveredOrder(); confirmed.setOrderStatus(OrderStatus.CONFIRMED); orderRepository.save(confirmed);
+        Order cancelled = deliveredOrder(); cancelled.setOrderStatus(OrderStatus.CANCELLED); orderRepository.save(cancelled);
+        var report = adminReportService.reportFor(LocalDate.now(), LocalDate.now());
+        assertThat(report.totalOrders()).isEqualTo(3);
+        assertThat(report.salesOrderCount()).isEqualTo(2);
+        assertThat(report.totalRevenue()).isEqualByComparingTo("180.00");
+        assertThat(report.averageOrderValue()).isEqualByComparingTo("90.00");
+        assertThat(report.orderStatusCounts()).anySatisfy(row -> { assertThat(row.status()).isEqualTo(OrderStatus.CANCELLED); assertThat(row.count()).isEqualTo(1); });
+        assertThat(report.topProducts()).singleElement().satisfies(row -> { assertThat(row.quantitySold()).isEqualTo(2); assertThat(row.revenue()).isEqualByComparingTo("180.00"); });
+        assertThat(adminReportService.reportFor(LocalDate.now().minusDays(1), LocalDate.now().minusDays(1)).totalOrders()).isZero();
     }
 
     private Product product() { Product value = new Product(); value.setName("Admin meal"); value.setDescription("Meal"); value.setPrice(new BigDecimal("90.00")); value.setStockQuantity(10); value.setCategory(category); value.setActive(true); return productRepository.save(value); }

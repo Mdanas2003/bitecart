@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 import java.util.List;
+import java.time.LocalDateTime;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -25,4 +26,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserEmailAndProductAndStatus(@Param("email") String email,
                                                     @Param("productId") Long productId,
                                                     @Param("orderStatus") OrderStatus orderStatus);
+
+    @EntityGraph(attributePaths = {"items", "items.product", "items.product.category"})
+    List<Order> findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(LocalDateTime startInclusive,
+                                                                     LocalDateTime endExclusive);
 }
