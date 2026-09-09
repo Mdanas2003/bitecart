@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteCart | Your Cravings. One Cart Away.</title>
+    <link rel="stylesheet" th:href="@{/css/catalog.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header th:replace="~{fragments/catalog :: header}"></header>
+    <main>
+        <section class="hero">
+            <div><p class="eyebrow">BITE CART</p><h1>Crave it. Find it. <em>Love it.</em></h1><p>Your favorite food is just a delicious discovery away.</p><a class="button" th:href="@{/products}">Explore the menu <span>→</span></a></div>
+            <div class="hero-visual" aria-hidden="true"><span>🍔</span><span>🍕</span><span>🍜</span></div>
+        </section>
+        <section class="content-section" aria-labelledby="categories-heading">
+            <div class="section-heading"><div><p class="eyebrow">CHOOSE A MOOD</p><h2 id="categories-heading">Fresh picks for every craving.</h2></div><a th:href="@{/products}">View all →</a></div>
+            <div class="category-grid">
+                <a th:each="category : ${categories}" class="category-card" th:href="@{/categories/{id}(id=${category.id})}">
+                    <img th:if="${category.imageUrl}" th:src="${category.imageUrl}" th:alt="${category.name}"><span th:unless="${category.imageUrl}" aria-hidden="true">🥢</span>
+                    <strong th:text="${category.name}">Category</strong><small th:text="${category.description}">Description</small>
+                </a>
+                <p class="empty-state" th:if="${#lists.isEmpty(categories)}">New categories are coming soon.</p>
+            </div>
+        </section>
+        <section class="content-section" aria-labelledby="featured-heading">
+            <div class="section-heading"><div><p class="eyebrow">CROWD FAVORITES</p><h2 id="featured-heading">Featured right now.</h2></div><a th:href="@{/products}">Browse everything →</a></div>
+            <div class="product-grid"><article th:each="product : ${featuredProducts}" th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></div>
+            <p class="empty-state" th:if="${#lists.isEmpty(featuredProducts)}">We are preparing some delicious highlights.</p>
+        </section>
+    </main>
+</div>
+</body>
+</html>

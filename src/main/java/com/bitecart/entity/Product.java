@@ -78,7 +78,7 @@ public class Product {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    protected Product() {
+    public Product() {
     }
 
     @PrePersist
