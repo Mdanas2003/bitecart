@@ -69,7 +69,7 @@ public class Address {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    protected Address() {
+    public Address() {
     }
 
     @PrePersist
