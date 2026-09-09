@@ -120,6 +120,13 @@ public class OrderServiceImpl implements OrderService {
         return toDto(order);
     }
 
+    @Override
+    public List<OrderDTO> getCurrentUsersOrders() {
+        return orderRepository.findByUserEmailIgnoreCaseOrderByCreatedAtDesc(currentAuthenticatedEmail()).stream()
+                .map(this::toDto)
+                .toList();
+    }
+
     private CouponApplicationDTO applyCoupon(String couponCode, BigDecimal subtotal) {
         return couponCode == null || couponCode.isBlank() ? null : couponService.applyCoupon(couponCode, subtotal);
     }
