@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create account | BiteCart</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<main class="auth-shell">
+    <section class="auth-card" aria-labelledby="register-title">
+        <a class="brand" th:href="@{/}">BITE CART</a>
+        <h1 id="register-title">Create your account.</h1>
+        <p class="intro">Save your favorites and order in a few simple steps.</p>
+
+        <form th:action="@{/register}" th:object="${registrationRequest}" method="post" novalidate>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="two-fields">
+                <div class="field">
+                    <label for="firstName">First name</label>
+                    <input id="firstName" th:field="*{firstName}" autocomplete="given-name" required th:attr="aria-invalid=${#fields.hasErrors('firstName')}">
+                    <small class="field-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></small>
+                </div>
+                <div class="field">
+                    <label for="lastName">Last name</label>
+                    <input id="lastName" th:field="*{lastName}" autocomplete="family-name" required th:attr="aria-invalid=${#fields.hasErrors('lastName')}">
+                    <small class="field-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></small>
+                </div>
+            </div>
+            <div class="field">
+                <label for="email">Email address</label>
+                <input id="email" th:field="*{email}" type="email" autocomplete="email" required th:attr="aria-invalid=${#fields.hasErrors('email')}">
+                <small class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </div>
+            <div class="field">
+                <label for="phone">Phone number</label>
+                <input id="phone" th:field="*{phone}" type="tel" autocomplete="tel" required th:attr="aria-invalid=${#fields.hasErrors('phone')}">
+                <small class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" th:field="*{password}" type="password" autocomplete="new-password" required aria-describedby="password-hint" th:attr="aria-invalid=${#fields.hasErrors('password')}">
+                <small id="password-hint">Use 8 to 72 characters.</small>
+                <small class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+            </div>
+            <div class="field">
+                <label for="confirmPassword">Confirm password</label>
+                <input id="confirmPassword" th:field="*{confirmPassword}" type="password" autocomplete="new-password" required th:attr="aria-invalid=${#fields.hasErrors('confirmPassword')}">
+                <small class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></small>
+            </div>
+            <button class="button" type="submit">Create account</button>
+        </form>
+
+        <p class="auth-footer">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+    </section>
+</main>
+</body>
+</html>

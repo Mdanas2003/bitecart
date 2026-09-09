@@ -72,7 +72,7 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Address> addresses = new ArrayList<>();
 
-    protected User() {
+    public User() {
     }
 
     @PrePersist
