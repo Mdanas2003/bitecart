@@ -5,6 +5,8 @@ import com.bitecart.entity.Role;
 import com.bitecart.entity.User;
 import com.bitecart.exception.DuplicateEmailException;
 import com.bitecart.repository.UserRepository;
+import com.bitecart.repository.CartRepository;
+import com.bitecart.repository.WishlistRepository;
 import com.bitecart.service.RegistrationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,12 @@ class AuthenticationIntegrationTests {
     private UserRepository userRepository;
 
     @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private WishlistRepository wishlistRepository;
+
+    @Autowired
     private RegistrationService registrationService;
 
     @Autowired
@@ -49,6 +57,8 @@ class AuthenticationIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        wishlistRepository.deleteAll();
+        cartRepository.deleteAll();
         userRepository.deleteAll();
     }
 

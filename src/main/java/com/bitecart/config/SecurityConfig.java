@@ -51,8 +51,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/register", "/products/**", "/categories/**",
                                 "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/cart/**", "/checkout/**", "/orders/**", "/profile/**",
-                                "/wishlist/**", "/addresses/**").authenticated()
+                        .requestMatchers("/cart", "/cart/**", "/checkout/**", "/orders/**", "/profile/**",
+                                "/wishlist", "/wishlist/**", "/addresses/**").authenticated()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

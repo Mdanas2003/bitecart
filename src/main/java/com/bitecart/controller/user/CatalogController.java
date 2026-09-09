@@ -5,6 +5,7 @@ import com.bitecart.dto.ProductSort;
 import com.bitecart.exception.ResourceNotFoundException;
 import com.bitecart.service.CategoryService;
 import com.bitecart.service.ProductService;
+import com.bitecart.service.WishlistService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
 
@@ -22,10 +24,12 @@ public class CatalogController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final WishlistService wishlistService;
 
-    public CatalogController(ProductService productService, CategoryService categoryService) {
+    public CatalogController(ProductService productService, CategoryService categoryService, WishlistService wishlistService) {
         this.productService = productService;
         this.categoryService = categoryService;
+        this.wishlistService = wishlistService;
     }
 
     @GetMapping("/")
@@ -60,9 +64,11 @@ public class CatalogController {
     }
 
     @GetMapping("/products/{id}")
-    public String productDetails(@PathVariable Long id, Model model) {
+    public String productDetails(@PathVariable Long id, Model model, Authentication authentication) {
         model.addAttribute("product", productService.getActiveProductById(id));
         model.addAttribute("relatedProducts", productService.getRelatedProducts(id));
+        model.addAttribute("wishlisted", authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName()) && wishlistService.isProductWishlisted(id));
         return "product-details";
     }
 
