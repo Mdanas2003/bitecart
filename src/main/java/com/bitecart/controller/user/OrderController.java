@@ -41,4 +41,14 @@ public class OrderController {
             return "order-not-found";
         }
     }
+
+    @GetMapping("/orders/{orderId}/tracking")
+    public String orderTracking(@PathVariable Long orderId, Model model) {
+        try {
+            model.addAttribute("tracking", orderService.getCurrentUsersOrderTracking(orderId));
+            return "order-tracking";
+        } catch (ResourceNotFoundException exception) {
+            return "order-not-found";
+        }
+    }
 }

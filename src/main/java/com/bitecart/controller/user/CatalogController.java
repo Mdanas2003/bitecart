@@ -5,6 +5,7 @@ import com.bitecart.dto.ProductSort;
 import com.bitecart.exception.ResourceNotFoundException;
 import com.bitecart.service.CategoryService;
 import com.bitecart.service.ProductService;
+import com.bitecart.service.ReviewService;
 import com.bitecart.service.WishlistService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -25,11 +26,14 @@ public class CatalogController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final WishlistService wishlistService;
+    private final ReviewService reviewService;
 
-    public CatalogController(ProductService productService, CategoryService categoryService, WishlistService wishlistService) {
+    public CatalogController(ProductService productService, CategoryService categoryService, WishlistService wishlistService,
+                             ReviewService reviewService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.wishlistService = wishlistService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/")
@@ -67,8 +71,13 @@ public class CatalogController {
     public String productDetails(@PathVariable Long id, Model model, Authentication authentication) {
         model.addAttribute("product", productService.getActiveProductById(id));
         model.addAttribute("relatedProducts", productService.getRelatedProducts(id));
-        model.addAttribute("wishlisted", authentication != null && authentication.isAuthenticated()
-                && !"anonymousUser".equals(authentication.getName()) && wishlistService.isProductWishlisted(id));
+        boolean authenticated = authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName());
+        model.addAttribute("wishlisted", authenticated && wishlistService.isProductWishlisted(id));
+        model.addAttribute("reviews", reviewService.getProductReviews(id));
+        if (authenticated) {
+            model.addAttribute("reviewableOrders", reviewService.getCurrentUsersReviewableOrders(id));
+        }
         return "product-details";
     }
 

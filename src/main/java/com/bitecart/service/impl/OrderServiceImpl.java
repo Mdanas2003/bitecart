@@ -3,11 +3,14 @@ package com.bitecart.service.impl;
 import com.bitecart.dto.CouponApplicationDTO;
 import com.bitecart.dto.OrderDTO;
 import com.bitecart.dto.OrderItemDTO;
+import com.bitecart.dto.OrderTrackingDTO;
+import com.bitecart.dto.OrderTrackingStepDTO;
 import com.bitecart.entity.Address;
 import com.bitecart.entity.Cart;
 import com.bitecart.entity.CartItem;
 import com.bitecart.entity.Order;
 import com.bitecart.entity.OrderItem;
+import com.bitecart.entity.OrderStatus;
 import com.bitecart.entity.PaymentMethod;
 import com.bitecart.entity.Product;
 import com.bitecart.entity.User;
@@ -127,6 +130,14 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
+    public OrderTrackingDTO getCurrentUsersOrderTracking(Long orderId) {
+        Order order = orderRepository.findByIdAndUserEmailIgnoreCase(orderId, currentAuthenticatedEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Order", orderId));
+        return new OrderTrackingDTO(order.getId(), order.getOrderStatus(), order.getCreatedAt(), order.getUpdatedAt(),
+                trackingSteps(order.getOrderStatus()));
+    }
+
     private CouponApplicationDTO applyCoupon(String couponCode, BigDecimal subtotal) {
         return couponCode == null || couponCode.isBlank() ? null : couponService.applyCoupon(couponCode, subtotal);
     }
@@ -161,5 +172,28 @@ public class OrderServiceImpl implements OrderService {
         return new OrderDTO(order.getId(), order.getAddress().getId(), order.getSubtotal(), order.getDiscountAmount(),
                 order.getDeliveryFee(), order.getTotalAmount(), order.getPaymentMethod(), order.getPaymentStatus(),
                 order.getOrderStatus(), order.getCouponCode(), order.getCreatedAt(), items);
+    }
+
+    private List<OrderTrackingStepDTO> trackingSteps(OrderStatus currentStatus) {
+        if (currentStatus == OrderStatus.CANCELLED) {
+            return List.of(new OrderTrackingStepDTO(OrderStatus.PLACED, "Order placed", true, false),
+                    new OrderTrackingStepDTO(OrderStatus.CANCELLED, "Order cancelled", true, true));
+        }
+        List<OrderStatus> flow = List.of(OrderStatus.PLACED, OrderStatus.CONFIRMED, OrderStatus.PREPARING,
+                OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED);
+        int currentIndex = flow.indexOf(currentStatus);
+        return flow.stream().map(status -> new OrderTrackingStepDTO(status, trackingLabel(status),
+                flow.indexOf(status) <= currentIndex, status == currentStatus)).toList();
+    }
+
+    private String trackingLabel(OrderStatus status) {
+        return switch (status) {
+            case PLACED -> "Order placed";
+            case CONFIRMED -> "Order confirmed";
+            case PREPARING -> "Being prepared";
+            case OUT_FOR_DELIVERY -> "Out for delivery";
+            case DELIVERED -> "Delivered";
+            case CANCELLED -> "Order cancelled";
+        };
     }
 }
