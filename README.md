@@ -16,6 +16,17 @@ The application starts on port `8080` by default.
 
 Maven is configured to use a project-local dependency cache (`.m2`) so the project can build in restricted environments.
 
+## Demo catalogue data
+
+Demo data is opt-in and never runs with the `prod` profile. It inserts missing categories and products only; it does not create users, modify existing records, or delete anything. Supply the same MySQL environment variables used for local development, then run with the `demo` profile:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = "demo"
+mvn spring-boot:run
+```
+
+The demo profile adds nine food categories and 27 Chennai-friendly products. Re-running it is safe: existing categories/products with the same names are left unchanged.
+
 ## Production deployment
 
 Build the executable JAR with Java 17+ and Maven 3.9+:

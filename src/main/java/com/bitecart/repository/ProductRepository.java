@@ -24,4 +24,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     List<Product> findTop4ByActiveTrueAndCategoryIdAndIdNotOrderByCreatedAtDesc(Long categoryId, Long productId,
                                                                                   Pageable pageable);
+
+    boolean existsByNameIgnoreCase(String name);
 }
