@@ -45,7 +45,7 @@ public class CatalogController {
 
     @GetMapping("/products")
     public String products(@RequestParam(required = false) String search,
-                           @RequestParam(required = false) Long category,
+                           @RequestParam(name = "categoryId", required = false) Long categoryId,
                            @RequestParam(required = false) BigDecimal minPrice,
                            @RequestParam(required = false) BigDecimal maxPrice,
                            @RequestParam(required = false) BigDecimal minRating,
@@ -57,7 +57,7 @@ public class CatalogController {
             redirectAttributes.addFlashAttribute("catalogError", "Use valid, non-negative catalog filters.");
             return "redirect:/products";
         }
-        CatalogFilter filter = new CatalogFilter(search, category, minPrice, maxPrice, minRating,
+        CatalogFilter filter = new CatalogFilter(search, categoryId, minPrice, maxPrice, minRating,
                 ProductSort.from(sort), page == null ? 0 : page, CATALOG_PAGE_SIZE);
         Page<?> products = productService.getCatalog(filter);
         model.addAttribute("products", products);
@@ -84,7 +84,7 @@ public class CatalogController {
     @GetMapping("/categories/{id}")
     public String category(@PathVariable Long id) {
         categoryService.getActiveCategoryById(id);
-        return "redirect:/products?category=" + id;
+        return "redirect:/products?categoryId=" + id;
     }
 
     private boolean validFilters(BigDecimal minPrice, BigDecimal maxPrice, BigDecimal minRating) {

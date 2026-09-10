@@ -108,10 +108,27 @@ class CatalogIntegrationTests {
         product("Spicy controller bowl", category, true, false, "220.00", "4.7");
         product("Mild controller bowl", category, true, false, "180.00", "4.4");
 
-        mockMvc.perform(get("/products").param("search", "spicy").param("category", category.getId().toString())
+        mockMvc.perform(get("/products").param("search", "spicy").param("categoryId", category.getId().toString())
                         .param("minPrice", "200.00").param("minRating", "4").param("sort", "priceAsc").param("page", "0"))
                 .andExpect(status().isOk()).andExpect(view().name("products"))
                 .andExpect(model().attributeExists("products", "filter", "categories", "sortOptions"));
+    }
+
+    @Test
+    void categoryNavigationUsesTheCatalogCategoryIdFilter() throws Exception {
+        Category biryani = category("Biryani", true);
+        Category burgers = category("Burgers", true);
+        product("Ambur Chicken Biryani", biryani, true, false, "289.00", "4.6");
+        product("Chennai Chicken Burger", burgers, true, false, "199.00", "4.5");
+
+        mockMvc.perform(get("/categories/{id}", biryani.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl(
+                        "/products?categoryId=" + biryani.getId()));
+
+        mockMvc.perform(get("/products").param("categoryId", biryani.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("products", org.hamcrest.Matchers.hasProperty("totalElements", org.hamcrest.Matchers.is(1L))));
     }
 
     private CatalogFilter filter(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice,
