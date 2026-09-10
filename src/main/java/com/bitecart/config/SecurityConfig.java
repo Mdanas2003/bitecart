@@ -3,6 +3,7 @@ package com.bitecart.config;
 import com.bitecart.security.AccessDeniedHandler;
 import com.bitecart.security.AuthenticationFailureHandler;
 import com.bitecart.security.CustomUserDetailsService;
+import com.bitecart.security.RoleBasedAuthenticationSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -21,13 +22,16 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final AuthenticationFailureHandler authenticationFailureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
+    private final RoleBasedAuthenticationSuccessHandler authenticationSuccessHandler;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
                           AuthenticationFailureHandler authenticationFailureHandler,
-                          AccessDeniedHandler accessDeniedHandler) {
+                          AccessDeniedHandler accessDeniedHandler,
+                          RoleBasedAuthenticationSuccessHandler authenticationSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
     }
 
     @Bean
@@ -61,7 +65,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(authenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
                         .permitAll())
                 .logout(logout -> logout

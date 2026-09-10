@@ -150,7 +150,7 @@ class AuthenticationIntegrationTests {
     }
 
     @Test
-    void validLoginAuthenticatesUsingEmail() throws Exception {
+    void userLoginRedirectsToStorefrontUsingGrantedRole() throws Exception {
         userRepository.save(user("member@example.com", Role.USER, true));
 
         mockMvc.perform(post("/login").with(csrf())
@@ -158,6 +158,17 @@ class AuthenticationIntegrationTests {
                         .param("password", TEST_PASSWORD))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
+    }
+
+    @Test
+    void adminLoginRedirectsToAdminUsingGrantedRole() throws Exception {
+        userRepository.save(user("admin@example.com", Role.ADMIN, true));
+
+        mockMvc.perform(post("/login").with(csrf())
+                        .param("email", "admin@example.com")
+                        .param("password", TEST_PASSWORD))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin"));
     }
 
     @Test
