@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.mock.web.MockHttpSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -169,6 +171,20 @@ class AuthenticationIntegrationTests {
                         .param("password", TEST_PASSWORD))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
+    }
+
+    @Test
+    void logoutInvalidatesAuthenticatedSessionAndReturnsToLogin() throws Exception {
+        userRepository.save(user("logout@example.com", Role.USER, true));
+        MvcResult login = mockMvc.perform(post("/login").with(csrf())
+                        .param("email", "logout@example.com")
+                        .param("password", TEST_PASSWORD))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) login.getRequest().getSession(false);
+        mockMvc.perform(post("/logout").session(session).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?logout"));
     }
 
     @Test

@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @SpringBootTest
@@ -99,6 +100,18 @@ class CatalogIntegrationTests {
         mockMvc.perform(get("/products").param("minPrice", "100").param("maxPrice", "10"))
                 .andExpect(status().is3xxRedirection());
         mockMvc.perform(get("/products/999")).andExpect(status().isNotFound()).andExpect(view().name("catalog-not-found"));
+    }
+
+    @Test
+    void catalogControllerBindsSearchFilterSortAndPaginationParameters() throws Exception {
+        Category category = category("Controller bowls", true);
+        product("Spicy controller bowl", category, true, false, "220.00", "4.7");
+        product("Mild controller bowl", category, true, false, "180.00", "4.4");
+
+        mockMvc.perform(get("/products").param("search", "spicy").param("category", category.getId().toString())
+                        .param("minPrice", "200.00").param("minRating", "4").param("sort", "priceAsc").param("page", "0"))
+                .andExpect(status().isOk()).andExpect(view().name("products"))
+                .andExpect(model().attributeExists("products", "filter", "categories", "sortOptions"));
     }
 
     private CatalogFilter filter(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice,

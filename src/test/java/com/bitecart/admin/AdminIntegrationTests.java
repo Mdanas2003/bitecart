@@ -27,6 +27,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -87,6 +89,16 @@ class AdminIntegrationTests {
         assertThat(report.orderStatusCounts()).anySatisfy(row -> { assertThat(row.status()).isEqualTo(OrderStatus.CANCELLED); assertThat(row.count()).isEqualTo(1); });
         assertThat(report.topProducts()).singleElement().satisfies(row -> { assertThat(row.quantitySold()).isEqualTo(2); assertThat(row.revenue()).isEqualByComparingTo("180.00"); });
         assertThat(adminReportService.reportFor(LocalDate.now().minusDays(1), LocalDate.now().minusDays(1)).totalOrders()).isZero();
+    }
+
+    @Test @WithMockUser(username = "admin@example.com", roles = "ADMIN")
+    void adminValidationAndInvalidOrderStatusReturnSafeFeedback() throws Exception {
+        mockMvc.perform(post("/admin/products").with(csrf()).param("name", "").param("price", "-1")
+                        .param("stockQuantity", "-1").param("categoryId", category.getId().toString()))
+                .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("adminError"));
+        Order order = deliveredOrder();
+        mockMvc.perform(post("/admin/orders/{id}/status", order.getId()).with(csrf()).param("status", "NOT_A_STATUS"))
+                .andExpect(status().isBadRequest()).andExpect(view().name("error/bad-request"));
     }
 
     private Product product() { Product value = new Product(); value.setName("Admin meal"); value.setDescription("Meal"); value.setPrice(new BigDecimal("90.00")); value.setStockQuantity(10); value.setCategory(category); value.setActive(true); return productRepository.save(value); }
