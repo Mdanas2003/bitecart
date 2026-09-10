@@ -52,6 +52,14 @@ public class AdminServiceImpl implements AdminService {
     @Override public List<CouponDTO> coupons() { return couponRepository.findAll().stream().map(this::toCouponDto).toList(); }
     @Override public CouponDTO coupon(Long id) { return toCouponDto(findCoupon(id)); }
     @Override @Transactional public CouponDTO saveCoupon(Long id, AdminCouponForm form) {
+        if (form == null || form.getDiscountType() == null || form.getDiscountValue() == null
+                || form.getMinimumOrderAmount() == null || form.getExpiryDate() == null) {
+            throw new IllegalArgumentException("Check the coupon fields and expiry date.");
+        }
+        if (form.getDiscountType() == DiscountType.PERCENTAGE
+                && form.getDiscountValue().compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Percentage discounts cannot exceed 100%.");
+        }
         Coupon value = id == null ? new Coupon() : findCoupon(id); couponRepository.findByCodeIgnoreCase(form.getCode().trim()).filter(found -> !found.getId().equals(id)).ifPresent(found -> { throw new IllegalArgumentException("A coupon with this code already exists."); });
         value.setCode(form.getCode().trim()); value.setDescription(form.getDescription()); value.setDiscountType(form.getDiscountType()); value.setDiscountValue(form.getDiscountValue()); value.setMinimumOrderAmount(form.getMinimumOrderAmount()); value.setMaximumDiscount(form.getMaximumDiscount()); value.setExpiryDate(form.getExpiryDate()); value.setUsageLimit(form.getUsageLimit()); value.setActive(form.isActive()); return toCouponDto(couponRepository.save(value));
     }
