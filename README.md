@@ -16,6 +16,17 @@ The application starts on port `8080` by default.
 
 Maven is configured to use a project-local dependency cache (`.m2`) so the project can build in restricted environments.
 
+## Razorpay Test Mode
+
+Online checkout uses Razorpay Standard Checkout. Add Test Mode keys to the process environment; never place real keys in source control:
+
+```powershell
+$env:RAZORPAY_KEY_ID = "rzp_test_your_key_id"
+$env:RAZORPAY_KEY_SECRET = "your_test_key_secret"
+```
+
+Choose **Online payment** at checkout. BiteCart creates the Razorpay order from its server-calculated final total, then verifies the returned payment signature on the server before changing an order to `PAID`. Closing, cancelling, or failing the Razorpay window leaves the order pending so the customer can retry from order details. COD remains unchanged.
+
 ## Demo catalogue data
 
 Demo data is opt-in and never runs with the `prod` profile. It inserts missing categories and products only; it does not create users, modify existing records, or delete anything. Supply the same MySQL environment variables used for local development, then run with the `demo` profile:

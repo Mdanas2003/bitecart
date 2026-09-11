@@ -18,3 +18,7 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:}
+  key-secret: ${RAZORPAY_KEY_SECRET:}

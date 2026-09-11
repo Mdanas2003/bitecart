@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Online payment | BiteCart</title><link rel="stylesheet" th:href="@{/css/catalog.css}"><link rel="stylesheet" th:href="@{/css/checkout.css}"></head>
+<body><div class="page-shell"><header th:replace="~{fragments/catalog :: header}"></header><main class="orders-layout">
+<section class="checkout-panel payment-panel"><p class="eyebrow">SECURE ONLINE PAYMENT</p><h1>Complete your payment.</h1><p>Order <strong th:text="|#${order.id}|">#</strong> total: <strong th:text="|₹${order.totalAmount}|">₹0</strong></p><p class="alert success" th:if="${paymentSuccess}" th:text="${paymentSuccess}"></p><p class="alert" th:if="${paymentError}" th:text="${paymentError}"></p>
+<div th:if="${razorpayCheckout != null}"><p class="mock-note">You can pay securely with UPI or another online method in Razorpay Test Mode.</p><button class="button" id="pay-now" type="button">Pay securely</button><p class="sign-in-prompt">If you close or cancel the payment window, this order remains pending and can be retried safely.</p><form id="razorpay-verify" th:action="@{/orders/{id}/payment/verify(id=${order.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><input type="hidden" name="razorpay_order_id"><input type="hidden" name="razorpay_payment_id"><input type="hidden" name="razorpay_signature"></form></div>
+<form th:if="${razorpayCheckout == null}" th:action="@{/orders/{id}/payment/retry(id=${order.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="button" type="submit">Retry online payment</button></form><p><a class="back-link" th:href="@{/orders/{id}(id=${order.id})}">Return to order details</a></p>
+</section></main></div>
+<script th:if="${razorpayCheckout != null}" src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script th:if="${razorpayCheckout != null}" th:inline="javascript">
+/*<![CDATA[*/
+const checkout = /*[[${razorpayCheckout}]]*/ {};
+const verificationForm = document.getElementById('razorpay-verify');
+const payButton = document.getElementById('pay-now');
+function startRazorpayPayment() {
+  const razorpay = new Razorpay({
+    key: checkout.keyId,
+    amount: checkout.amountInPaise,
+    currency: checkout.currency,
+    name: 'BiteCart',
+    description: 'Order #' + checkout.orderId,
+    order_id: checkout.razorpayOrderId,
+    handler: function (response) {
+      verificationForm.elements.razorpay_order_id.value = response.razorpay_order_id;
+      verificationForm.elements.razorpay_payment_id.value = response.razorpay_payment_id;
+      verificationForm.elements.razorpay_signature.value = response.razorpay_signature;
+      verificationForm.submit();
+    },
+    modal: { ondismiss: function () { payButton.focus(); } }
+  });
+  razorpay.on('payment.failed', function () { payButton.focus(); });
+  razorpay.open();
+}
+payButton.addEventListener('click', startRazorpayPayment);
+window.addEventListener('load', startRazorpayPayment, { once: true });
+/*]]>*/
+</script></body></html>

@@ -1,21 +1,22 @@
 package com.bitecart.controller.user;
 
-import com.bitecart.dto.AddressDTO;
 import com.bitecart.dto.CartDTO;
 import com.bitecart.dto.CheckoutForm;
+import com.bitecart.dto.AddressDTO;
 import com.bitecart.dto.OrderDTO;
-import com.bitecart.entity.Address;
+import com.bitecart.entity.PaymentMethod;
 import com.bitecart.exception.CouponValidationException;
 import com.bitecart.exception.EmptyCartException;
 import com.bitecart.exception.InsufficientStockException;
+import com.bitecart.exception.PaymentGatewayException;
 import com.bitecart.exception.ResourceNotFoundException;
-import com.bitecart.repository.AddressRepository;
+import com.bitecart.service.AddressService;
 import com.bitecart.service.CartService;
 import com.bitecart.service.CouponService;
 import com.bitecart.service.OrderService;
+import com.bitecart.service.RazorpayPaymentService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Controller
 public class CheckoutController {
@@ -37,18 +37,20 @@ public class CheckoutController {
     private final CartService cartService;
     private final CouponService couponService;
     private final OrderService orderService;
-    private final AddressRepository addressRepository;
+    private final AddressService addressService;
+    private final RazorpayPaymentService razorpayPaymentService;
 
     public CheckoutController(CartService cartService, CouponService couponService, OrderService orderService,
-                              AddressRepository addressRepository) {
+                              AddressService addressService, RazorpayPaymentService razorpayPaymentService) {
         this.cartService = cartService;
         this.couponService = couponService;
         this.orderService = orderService;
-        this.addressRepository = addressRepository;
+        this.addressService = addressService;
+        this.razorpayPaymentService = razorpayPaymentService;
     }
 
     @GetMapping("/checkout")
-    public String checkout(Model model, Authentication authentication, HttpSession session,
+    public String checkout(Model model, HttpSession session,
                            @ModelAttribute("checkoutForm") CheckoutForm checkoutForm) {
         CartDTO cart = cartService.getCurrentUsersCart();
         if (cart.items().isEmpty()) {
@@ -67,7 +69,7 @@ public class CheckoutController {
             }
         }
 
-        List<AddressDTO> addresses = addressesFor(authentication);
+        var addresses = addressService.getCurrentUsersAddresses();
         if (checkoutForm.getAddressId() == null) {
             addresses.stream().filter(AddressDTO::defaultAddress).findFirst()
                     .or(() -> addresses.stream().findFirst())
@@ -124,6 +126,14 @@ public class CheckoutController {
             String couponCode = (String) session.getAttribute(CHECKOUT_COUPON_SESSION_KEY);
             OrderDTO order = orderService.createOrder(checkoutForm.getAddressId(), checkoutForm.getPaymentMethod(), couponCode);
             session.removeAttribute(CHECKOUT_COUPON_SESSION_KEY);
+            if (order.paymentMethod() == PaymentMethod.ONLINE) {
+                try {
+                    razorpayPaymentService.startPayment(order.id());
+                } catch (PaymentGatewayException exception) {
+                    redirectAttributes.addFlashAttribute("paymentError", exception.getMessage());
+                }
+                return "redirect:/orders/" + order.id() + "/payment";
+            }
             redirectAttributes.addFlashAttribute("orderSuccess", "Your order has been placed.");
             return "redirect:/orders/" + order.id() + "/success";
         } catch (ResourceNotFoundException | EmptyCartException | InsufficientStockException
@@ -133,14 +143,4 @@ public class CheckoutController {
         }
     }
 
-    private List<AddressDTO> addressesFor(Authentication authentication) {
-        return addressRepository.findByUserEmailIgnoreCaseOrderByDefaultAddressDescCreatedAtDesc(authentication.getName()).stream()
-                .map(this::toDto)
-                .toList();
-    }
-
-    private AddressDTO toDto(Address address) {
-        return new AddressDTO(address.getId(), address.getAddressLine1(), address.getAddressLine2(), address.getCity(),
-                address.getState(), address.getPostalCode(), address.getCountry(), address.getPhone(), address.isDefaultAddress());
-    }
 }

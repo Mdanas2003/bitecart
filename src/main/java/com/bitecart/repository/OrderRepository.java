@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
+    boolean existsByAddressId(Long addressId);
+
     @EntityGraph(attributePaths = {"address", "items", "items.product"})
     Optional<Order> findByIdAndUserEmailIgnoreCase(Long id, String email);
 

@@ -9,6 +9,7 @@
         <a sec:authorize="isAnonymous()" th:href="@{/login}">Sign in</a>
         <a sec:authorize="isAuthenticated()" th:href="@{/wishlist}">Wishlist</a>
         <a sec:authorize="isAuthenticated()" th:href="@{/cart}">Cart</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/addresses}">Addresses</a>
         <a sec:authorize="isAuthenticated()" th:href="@{/orders}">Orders</a>
         <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="logout-form">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
