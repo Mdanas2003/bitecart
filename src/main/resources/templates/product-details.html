@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="|${product.name} | BiteCart|">Product | BiteCart</title>
+    <title th:text="${product.name + ' | BiteCart'}">Product | BiteCart</title>
     <link rel="stylesheet" th:href="@{/css/catalog.css}">
 </head>
 <body>
@@ -47,6 +47,6 @@
         </div>
     </section>
 
-    <section class="content-section" th:if="${not #lists.isEmpty(relatedProducts)}"><div class="section-heading"><div><p class="eyebrow">MORE TO TRY</p><h2>From the same kitchen.</h2></div></div><div class="product-grid"><article th:each="related : ${relatedProducts}" th:replace="~{fragments/catalog :: productCard(product=${related})}"></article></div></section>
+    <section class="content-section" th:if="${not #lists.isEmpty(relatedProducts)}"><div class="section-heading"><div><p class="eyebrow">MORE TO TRY</p><h2>From the same kitchen.</h2></div></div><div class="product-grid"><th:block th:each="related : ${relatedProducts}"><article th:replace="~{fragments/catalog :: productCard(product=${related})}"></article></th:block></div></section>
 </main><footer th:replace="~{fragments/catalog :: footer}"></footer></div>
 </body></html>

@@ -25,7 +25,7 @@
         </section>
         <section class="content-section" aria-labelledby="featured-heading">
             <div class="section-heading"><div><p class="eyebrow">CROWD FAVORITES</p><h2 id="featured-heading">Featured right now.</h2></div><a th:href="@{/products}">Browse everything →</a></div>
-            <div class="product-grid"><article th:each="product : ${featuredProducts}" th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></div>
+            <div class="product-grid"><th:block th:each="product : ${featuredProducts}"><article th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></th:block></div>
             <p class="empty-state" th:if="${#lists.isEmpty(featuredProducts)}">We are preparing some delicious highlights.</p>
         </section>
     </main>

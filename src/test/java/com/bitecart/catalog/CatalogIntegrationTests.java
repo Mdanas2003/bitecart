@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @SpringBootTest
@@ -128,7 +129,9 @@ class CatalogIntegrationTests {
 
         mockMvc.perform(get("/products").param("categoryId", biryani.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("products", org.hamcrest.Matchers.hasProperty("totalElements", org.hamcrest.Matchers.is(1L))));
+                .andExpect(model().attribute("products", org.hamcrest.Matchers.hasProperty("totalElements", org.hamcrest.Matchers.is(1L))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Ambur Chicken Biryani")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Chennai Chicken Burger"))));
     }
 
     private CatalogFilter filter(String search, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice,

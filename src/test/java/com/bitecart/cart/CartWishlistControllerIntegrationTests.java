@@ -69,6 +69,8 @@ class CartWishlistControllerIntegrationTests {
     void cartControllerAddsUpdatesRemovesAndClearsCart() throws Exception {
         mockMvc.perform(post("/cart/items").with(csrf()).param("productId", activeProduct.getId().toString()).param("quantity", "1"))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/products/" + activeProduct.getId()));
+        mockMvc.perform(get("/products/{id}", activeProduct.getId()))
+                .andExpect(status().isOk()).andExpect(view().name("product-details"));
         Long itemId = cartRepository.findByUserEmailIgnoreCase("one@example.com").orElseThrow().getItems().get(0).getId();
         mockMvc.perform(post("/cart/items/{id}", itemId).with(csrf()).param("quantity", "2"))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/cart"));
@@ -92,6 +94,8 @@ class CartWishlistControllerIntegrationTests {
     void wishlistControllerAddsAndRemovesItem() throws Exception {
         mockMvc.perform(post("/wishlist/items").with(csrf()).param("productId", activeProduct.getId().toString()))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/products/" + activeProduct.getId()));
+        mockMvc.perform(get("/products/{id}", activeProduct.getId()))
+                .andExpect(status().isOk()).andExpect(view().name("product-details"));
         Long itemId = wishlistRepository.findByUserEmailIgnoreCaseOrderByCreatedAtDesc("one@example.com").get(0).getId();
         mockMvc.perform(post("/wishlist/items/{id}/remove", itemId).with(csrf()))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/wishlist"));

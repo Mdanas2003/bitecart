@@ -13,7 +13,7 @@
         <button class="button" type="submit">Apply</button>
     </form>
     <div class="results-bar"><p th:text="|${products.totalElements} delicious finds|">0 delicious finds</p><a th:href="@{/products}" th:if="${filter.search != null or filter.categoryId != null or filter.minPrice != null or filter.maxPrice != null or filter.minRating != null or filter.sort.parameterValue != 'newest'}">Clear filters</a></div>
-    <div class="product-grid"><article th:each="product : ${products.content}" th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></div>
+    <div class="product-grid"><th:block th:each="product : ${products.content}"><article th:replace="~{fragments/catalog :: productCard(product=${product})}"></article></th:block></div>
     <p class="empty-state" th:if="${products.empty}">No bites match those filters. Try a broader search.</p>
     <nav class="pagination" th:if="${products.totalPages > 1}" aria-label="Catalog pages"><a th:if="${products.hasPrevious()}" th:href="@{/products(page=${products.number - 1},search=${filter.search},categoryId=${filter.categoryId},minPrice=${filter.minPrice},maxPrice=${filter.maxPrice},minRating=${filter.minRating},sort=${filter.sort.parameterValue})}">← Previous</a><span th:text="|Page ${products.number + 1} of ${products.totalPages}|">Page 1 of 1</span><a th:if="${products.hasNext()}" th:href="@{/products(page=${products.number + 1},search=${filter.search},categoryId=${filter.categoryId},minPrice=${filter.minPrice},maxPrice=${filter.maxPrice},minRating=${filter.minRating},sort=${filter.sort.parameterValue})}">Next →</a></nav>
 </main><footer th:replace="~{fragments/catalog :: footer}"></footer></div></body></html>
