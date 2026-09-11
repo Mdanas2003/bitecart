@@ -31,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,6 +67,7 @@ class RazorpayPaymentServiceIntegrationTests {
     @Autowired private AddressRepository addressRepository;
     @Autowired private WishlistRepository wishlistRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private ObjectMapper objectMapper;
     @MockBean private RazorpayGateway razorpayGateway;
 
     private User owner;
@@ -139,6 +141,14 @@ class RazorpayPaymentServiceIntegrationTests {
         authenticate(other.getEmail());
         assertThatThrownBy(() -> razorpayPaymentService.getPendingPayment(order.id()))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void mapsRazorpayOrdersApiAmountFieldToPaise() throws Exception {
+        RazorpayGatewayOrder gatewayOrder = objectMapper.readValue(
+                "{\"id\":\"order_test_123\",\"amount\":12000,\"currency\":\"INR\"}", RazorpayGatewayOrder.class);
+
+        assertThat(gatewayOrder.amountInPaise()).isEqualTo(12000L);
     }
 
     private OrderDTO onlineOrder() {
