@@ -35,10 +35,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -134,6 +137,19 @@ class OrderTrackingReviewIntegrationTests {
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/orders/{id}/tracking", deliveredOrder.getId()).with(user("two@example.com").roles("USER")))
                 .andExpect(status().isOk()).andExpect(view().name("order-not-found"));
+    }
+
+    @Test
+    void productDetailsShowsReviewUiOnlyForEligibleDeliveredPurchase() throws Exception {
+        mockMvc.perform(get("/products/{id}", product.getId()).with(user(firstUser.getEmail()).roles("USER")))
+                .andExpect(status().isOk()).andExpect(view().name("product-details"))
+                .andExpect(model().attributeExists("reviews", "reviewableOrders"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Write a Review")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("rating-5")));
+
+        mockMvc.perform(get("/products/{id}", product.getId()).with(anonymous()))
+                .andExpect(status().isOk()).andExpect(view().name("product-details"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Write a Review"))));
     }
 
     private void clearDatabase() {

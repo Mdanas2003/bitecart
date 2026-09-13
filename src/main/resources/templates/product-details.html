@@ -33,15 +33,16 @@
         </div>
     </section>
 
-    <section class="review-section">
-        <div class="section-heading"><div><p class="eyebrow">CUSTOMER REVIEWS</p><h2>What people are saying.</h2></div><span th:text="|${reviews.size()} review${reviews.size() == 1 ? '' : 's'}|">0 reviews</span></div>
+    <section class="review-section" aria-labelledby="reviews-heading">
+        <div class="section-heading"><div><p class="eyebrow">CUSTOMER REVIEWS</p><h2 id="reviews-heading">What people are saying.</h2></div><div class="review-summary" th:if="${not #lists.isEmpty(reviews)}"><strong th:text="|★ ${product.rating}/5|">★ 0/5</strong><span th:text="|${reviews.size()} review${reviews.size() == 1 ? '' : 's'}|">0 reviews</span></div><span th:if="${#lists.isEmpty(reviews)}">No reviews yet</span></div>
         <div class="review-list" th:if="${not #lists.isEmpty(reviews)}"><article class="review-card" th:each="review : ${reviews}"><div><strong th:text="${review.reviewerName}">Customer</strong><span class="review-stars" th:text="|★ ${review.rating}/5|">★ 5/5</span></div><p th:text="${review.comment}">Review</p><small th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</small></article></div>
         <p class="empty-state" th:if="${#lists.isEmpty(reviews)}">No reviews yet. Be the first verified customer to share your experience.</p>
         <div sec:authorize="isAuthenticated()" class="review-form-wrap" th:if="${not #lists.isEmpty(reviewableOrders)}">
-            <h3>Review a delivered order</h3>
+            <p class="eyebrow">VERIFIED PURCHASE</p><h3>Write a Review</h3>
+            <p>Tell other BiteCart customers about this delivered order.</p>
             <form th:action="@{/products/{id}/reviews(id=${product.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <label for="review-order">Delivered order</label><select id="review-order" name="orderId" required><option value="">Select an order</option><option th:each="order : ${reviewableOrders}" th:value="${order.id}" th:text="|Order #${order.id} — ${#temporals.format(order.createdAt, 'dd MMM yyyy')}|">Order</option></select>
-                <label for="review-rating">Rating</label><select id="review-rating" name="rating" required><option value="">Choose a rating</option><option value="5">5 — Excellent</option><option value="4">4 — Great</option><option value="3">3 — Good</option><option value="2">2 — Fair</option><option value="1">1 — Poor</option></select>
+                <fieldset class="star-rating"><legend>Rating</legend><div><input id="rating-1" name="rating" type="radio" value="1" required><label for="rating-1"><span aria-hidden="true">★</span><span class="sr-only">1 star</span></label><input id="rating-2" name="rating" type="radio" value="2"><label for="rating-2"><span aria-hidden="true">★</span><span class="sr-only">2 stars</span></label><input id="rating-3" name="rating" type="radio" value="3"><label for="rating-3"><span aria-hidden="true">★</span><span class="sr-only">3 stars</span></label><input id="rating-4" name="rating" type="radio" value="4"><label for="rating-4"><span aria-hidden="true">★</span><span class="sr-only">4 stars</span></label><input id="rating-5" name="rating" type="radio" value="5"><label for="rating-5"><span aria-hidden="true">★</span><span class="sr-only">5 stars</span></label></div></fieldset>
                 <label for="review-comment">Your review</label><textarea id="review-comment" name="comment" minlength="3" maxlength="1000" required></textarea><button class="button" type="submit">Submit review</button>
             </form>
         </div>
