@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -43,6 +44,11 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartDTO getCurrentUsersCart() {
         return toDto(getOrCreateCart());
+    }
+
+    @Override
+    public Optional<CartDTO> findCurrentUsersCart() {
+        return cartRepository.findByUserEmailIgnoreCase(currentAuthenticatedEmail()).map(this::toDto);
     }
 
     @Override

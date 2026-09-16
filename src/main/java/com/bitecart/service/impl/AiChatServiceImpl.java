@@ -5,6 +5,7 @@ import com.bitecart.config.AiProperties;
 import com.bitecart.exception.ChatUnavailableException;
 import com.bitecart.service.AiChatService;
 import com.bitecart.service.CatalogKnowledgeService;
+import com.bitecart.service.PersonalContextService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,19 +17,23 @@ public class AiChatServiceImpl implements AiChatService {
 
     private static final String INSTRUCTIONS = "You are BiteCart's helpful customer assistant. Answer only general questions "
             + "about BiteCart, food ordering, browsing the menu, using the website, and general customer support. "
-            + "You have no access to customer accounts, orders, carts, addresses, stock, payments, or admin data. "
-            + "Never claim that you can view or change those details. Keep answers concise, friendly, and helpful.";
+            + "You may use only the supplied read-only catalog data and private context for the authenticated customer. "
+            + "Never claim access to another customer, addresses, payment details, or admin data, and never claim to make changes. "
+            + "Keep answers concise, friendly, and helpful.";
 
     private final Map<String, AiProvider> providers;
     private final AiProperties properties;
     private final CatalogKnowledgeService catalogKnowledgeService;
+    private final PersonalContextService personalContextService;
 
     public AiChatServiceImpl(java.util.List<AiProvider> providers, AiProperties properties,
-                             CatalogKnowledgeService catalogKnowledgeService) {
+                             CatalogKnowledgeService catalogKnowledgeService,
+                             PersonalContextService personalContextService) {
         this.providers = providers.stream().collect(Collectors.toUnmodifiableMap(
                 provider -> provider.providerName().toLowerCase(), Function.identity()));
         this.properties = properties;
         this.catalogKnowledgeService = catalogKnowledgeService;
+        this.personalContextService = personalContextService;
     }
 
     @Override
@@ -38,6 +43,7 @@ public class AiChatServiceImpl implements AiChatService {
         if (provider == null) {
             throw new ChatUnavailableException("BiteCart Assistant is not configured right now. Please try again later.");
         }
-        return provider.answer(INSTRUCTIONS + "\n\n" + catalogKnowledgeService.findCatalogContext(message), message);
+        return provider.answer(INSTRUCTIONS + "\n\n" + catalogKnowledgeService.findCatalogContext(message)
+                + "\n\n" + personalContextService.findPersonalContext(message), message);
     }
 }

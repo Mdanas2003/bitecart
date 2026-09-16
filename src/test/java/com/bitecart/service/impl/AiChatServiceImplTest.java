@@ -4,6 +4,7 @@ import com.bitecart.ai.AiProvider;
 import com.bitecart.config.AiProperties;
 import com.bitecart.exception.ChatUnavailableException;
 import com.bitecart.service.CatalogKnowledgeService;
+import com.bitecart.service.PersonalContextService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,7 +21,7 @@ class AiChatServiceImplTest {
         AiProvider openAi = provider("openai", "OpenAI reply");
         AiProvider ollama = provider("ollama", "Ollama reply");
 
-        assertThat(new AiChatServiceImpl(List.of(openAi, ollama), properties, context()).answerGeneralQuestion("Help"))
+        assertThat(new AiChatServiceImpl(List.of(openAi, ollama), properties, context(), personalContext()).answerGeneralQuestion("Help"))
                 .isEqualTo("Ollama reply");
     }
 
@@ -29,7 +30,7 @@ class AiChatServiceImplTest {
         AiProperties properties = new AiProperties();
         properties.setProvider("unknown");
 
-        assertThatThrownBy(() -> new AiChatServiceImpl(List.of(provider("openai", "reply")), properties, context())
+        assertThatThrownBy(() -> new AiChatServiceImpl(List.of(provider("openai", "reply")), properties, context(), personalContext())
                 .answerGeneralQuestion("Help")).isInstanceOf(ChatUnavailableException.class);
     }
 
@@ -42,5 +43,9 @@ class AiChatServiceImplTest {
 
     private CatalogKnowledgeService context() {
         return question -> "Authoritative BiteCart catalog data";
+    }
+
+    private PersonalContextService personalContext() {
+        return question -> "Read-only private context";
     }
 }

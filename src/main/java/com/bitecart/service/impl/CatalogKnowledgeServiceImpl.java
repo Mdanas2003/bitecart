@@ -68,7 +68,7 @@ public class CatalogKnowledgeServiceImpl implements CatalogKnowledgeService {
                     .append(" | rating: ").append(product.rating())
                     .append(" | details: ").append(product.description()));
         }
-        context.append("\nUse only this catalog data for catalog facts. Do not claim access to carts, orders, payments, or customer accounts.");
+        context.append("\nUse only this catalog data for catalog facts; private customer data, when permitted, is supplied separately.");
         return context.toString();
     }
 

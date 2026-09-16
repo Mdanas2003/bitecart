@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -46,6 +47,18 @@ public class CouponServiceImpl implements CouponService {
         BigDecimal discount = validateAndCalculate(coupon, subtotal);
         coupon.setUsedCount(coupon.getUsedCount() + 1);
         return new CouponApplicationDTO(coupon.getId(), coupon.getCode(), discount);
+    }
+
+    @Override
+    public List<CouponDTO> getApplicableCoupons(BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Subtotal must not be negative.");
+        }
+        return couponRepository.findByActiveTrueAndExpiryDateAfterOrderByExpiryDateAsc(LocalDateTime.now()).stream()
+                .filter(coupon -> (coupon.getUsageLimit() == null || coupon.getUsedCount() < coupon.getUsageLimit())
+                        && subtotal.compareTo(coupon.getMinimumOrderAmount()) >= 0)
+                .map(this::toDto)
+                .toList();
     }
 
     private Coupon findCoupon(String code) {
