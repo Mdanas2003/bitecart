@@ -4,11 +4,13 @@ import com.bitecart.ai.AiProvider;
 import com.bitecart.config.AiProperties;
 import com.bitecart.exception.ChatUnavailableException;
 import com.bitecart.service.AiChatService;
+import com.bitecart.service.AiPersonalActionService;
 import com.bitecart.service.CatalogKnowledgeService;
 import com.bitecart.service.PersonalContextService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,19 +27,24 @@ public class AiChatServiceImpl implements AiChatService {
     private final AiProperties properties;
     private final CatalogKnowledgeService catalogKnowledgeService;
     private final PersonalContextService personalContextService;
+    private final AiPersonalActionService personalActionService;
 
     public AiChatServiceImpl(java.util.List<AiProvider> providers, AiProperties properties,
                              CatalogKnowledgeService catalogKnowledgeService,
-                             PersonalContextService personalContextService) {
+                             PersonalContextService personalContextService,
+                             AiPersonalActionService personalActionService) {
         this.providers = providers.stream().collect(Collectors.toUnmodifiableMap(
                 provider -> provider.providerName().toLowerCase(), Function.identity()));
         this.properties = properties;
         this.catalogKnowledgeService = catalogKnowledgeService;
         this.personalContextService = personalContextService;
+        this.personalActionService = personalActionService;
     }
 
     @Override
     public String answerGeneralQuestion(String message) {
+        Optional<String> actionResponse = personalActionService.handleAction(message);
+        if (actionResponse.isPresent()) return actionResponse.get();
         String selected = properties.getProvider() == null ? "" : properties.getProvider().trim().toLowerCase();
         AiProvider provider = providers.get(selected);
         if (provider == null) {
