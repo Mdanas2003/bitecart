@@ -74,7 +74,25 @@ class AiChatControllerIntegrationTests {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"ai-chat\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("data-chat-toggle aria-expanded=\"true\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("data-chat-panel aria-label=\"BiteCart Assistant\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"ai-chat-composer\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Ask a general BiteCart question...")));
+    }
+
+    @Test
+    void servesCompactExpandableComposerAssets() throws Exception {
+        mockMvc.perform(get("/js/ai-chat.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("ai-chat--composer-expanded")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("ai-chat--expanded")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("collapseWidget")));
+
+        mockMvc.perform(get("/css/ui-polish.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("height:min(300px")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(".ai-chat-panel[hidden]{display:none}")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(".ai-chat--expanded .ai-chat-panel")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(".ai-chat--composer-expanded .ai-chat-composer textarea")));
     }
 }

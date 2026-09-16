@@ -20,10 +20,10 @@
     </header>
     <aside sec:authorize="isAuthenticated()" class="ai-chat" data-ai-chat
            th:attr="data-csrf-token=${_csrf.token},data-csrf-header=${_csrf.headerName}">
-        <button class="ai-chat-toggle" type="button" data-chat-toggle aria-expanded="false" aria-controls="ai-chat-panel">
+        <button class="ai-chat-toggle" type="button" data-chat-toggle aria-expanded="true" aria-controls="ai-chat-panel">
             <span aria-hidden="true">✦</span> Ask BiteCart
         </button>
-        <section id="ai-chat-panel" class="ai-chat-panel" data-chat-panel hidden aria-label="BiteCart Assistant">
+        <section id="ai-chat-panel" class="ai-chat-panel" data-chat-panel aria-label="BiteCart Assistant">
             <header class="ai-chat-panel-header"><div><p class="eyebrow">BITE CART ASSISTANT</p><h2>How can we help?</h2></div><button type="button" class="ai-chat-close" data-chat-close aria-label="Close BiteCart Assistant">×</button></header>
             <div class="ai-chat-messages" data-chat-messages aria-live="polite"><p class="ai-chat-message ai-chat-message--assistant">Hi! Ask me about BiteCart or using the food-ordering experience.</p></div>
             <form class="ai-chat-composer" novalidate><label class="sr-only" for="ai-chat-message">Your message</label><textarea id="ai-chat-message" maxlength="1000" required placeholder="Ask a general BiteCart question..."></textarea><button class="button" type="submit">Send</button></form>

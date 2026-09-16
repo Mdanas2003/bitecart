@@ -21,11 +21,17 @@
     const setOpen = open => {
         panel.hidden = !open;
         toggle.setAttribute('aria-expanded', String(open));
-        if (open) input.focus();
+        if (open) expandWidget();
+        else collapseWidget();
     };
+
+    const expandWidget = () => chat.classList.add('ai-chat--expanded', 'ai-chat--composer-expanded');
+    const collapseWidget = () => chat.classList.remove('ai-chat--expanded', 'ai-chat--composer-expanded');
 
     toggle.addEventListener('click', () => setOpen(panel.hidden));
     close.addEventListener('click', () => setOpen(false));
+    input.addEventListener('focus', expandWidget);
+    input.addEventListener('pointerdown', expandWidget);
     form.addEventListener('submit', async event => {
         event.preventDefault();
         const message = input.value.trim();
@@ -48,7 +54,7 @@
         } finally {
             input.disabled = false;
             submit.disabled = false;
-            input.focus();
+            collapseWidget();
         }
     });
 })();
