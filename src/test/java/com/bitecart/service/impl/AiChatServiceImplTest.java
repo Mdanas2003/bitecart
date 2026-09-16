@@ -3,6 +3,7 @@ package com.bitecart.service.impl;
 import com.bitecart.ai.AiProvider;
 import com.bitecart.config.AiProperties;
 import com.bitecart.exception.ChatUnavailableException;
+import com.bitecart.service.CatalogKnowledgeService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +20,7 @@ class AiChatServiceImplTest {
         AiProvider openAi = provider("openai", "OpenAI reply");
         AiProvider ollama = provider("ollama", "Ollama reply");
 
-        assertThat(new AiChatServiceImpl(List.of(openAi, ollama), properties).answerGeneralQuestion("Help"))
+        assertThat(new AiChatServiceImpl(List.of(openAi, ollama), properties, context()).answerGeneralQuestion("Help"))
                 .isEqualTo("Ollama reply");
     }
 
@@ -28,7 +29,7 @@ class AiChatServiceImplTest {
         AiProperties properties = new AiProperties();
         properties.setProvider("unknown");
 
-        assertThatThrownBy(() -> new AiChatServiceImpl(List.of(provider("openai", "reply")), properties)
+        assertThatThrownBy(() -> new AiChatServiceImpl(List.of(provider("openai", "reply")), properties, context())
                 .answerGeneralQuestion("Help")).isInstanceOf(ChatUnavailableException.class);
     }
 
@@ -37,5 +38,9 @@ class AiChatServiceImplTest {
             @Override public String providerName() { return name; }
             @Override public String answer(String instructions, String message) { return reply; }
         };
+    }
+
+    private CatalogKnowledgeService context() {
+        return question -> "Authoritative BiteCart catalog data";
     }
 }

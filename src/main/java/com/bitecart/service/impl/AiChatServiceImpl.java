@@ -4,6 +4,7 @@ import com.bitecart.ai.AiProvider;
 import com.bitecart.config.AiProperties;
 import com.bitecart.exception.ChatUnavailableException;
 import com.bitecart.service.AiChatService;
+import com.bitecart.service.CatalogKnowledgeService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -20,11 +21,14 @@ public class AiChatServiceImpl implements AiChatService {
 
     private final Map<String, AiProvider> providers;
     private final AiProperties properties;
+    private final CatalogKnowledgeService catalogKnowledgeService;
 
-    public AiChatServiceImpl(java.util.List<AiProvider> providers, AiProperties properties) {
+    public AiChatServiceImpl(java.util.List<AiProvider> providers, AiProperties properties,
+                             CatalogKnowledgeService catalogKnowledgeService) {
         this.providers = providers.stream().collect(Collectors.toUnmodifiableMap(
                 provider -> provider.providerName().toLowerCase(), Function.identity()));
         this.properties = properties;
+        this.catalogKnowledgeService = catalogKnowledgeService;
     }
 
     @Override
@@ -34,6 +38,6 @@ public class AiChatServiceImpl implements AiChatService {
         if (provider == null) {
             throw new ChatUnavailableException("BiteCart Assistant is not configured right now. Please try again later.");
         }
-        return provider.answer(INSTRUCTIONS, message);
+        return provider.answer(INSTRUCTIONS + "\n\n" + catalogKnowledgeService.findCatalogContext(message), message);
     }
 }
