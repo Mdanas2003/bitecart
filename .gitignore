@@ -27,3 +27,5 @@ application-*.local.properties
 *.jks
 secrets/
 credentials/
+.env
+run-bitecart.bat
